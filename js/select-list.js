@@ -4,7 +4,8 @@
     var defaultOptions = {
         width: "100%",
         defaultClass: 'select-list-active',
-        autocompleteFromServer : false
+        autocompleteFromServer: false,
+        autocompleteMinLength: 3
     };
 
     var fetchedData;
@@ -42,7 +43,7 @@
     SelectList.prototype = {
         init: function () {
             var _this = this;
-            if (!_this.$elem.is('input')) {
+            if (!_this.$elem.hasClass('select-list') || !_this.$elem.is('input')) {
                 throw "Invalid input for select list";
             }
 
@@ -137,7 +138,7 @@
             offlineMode = true;
             changeDropDownOptions(dropdown, fetchedData, _this);
         } else {
-            throw "Invalid source";
+            throw "Invalid data source";
         }
     };
 
@@ -145,7 +146,7 @@
         var _this = this;
         var dropdown = _this.parent.find('.' + dropdownClass);
         if (!offlineMode) {
-            if (query.length < 3 && query.length > 0) {
+            if (query.length < defaultOptions.autocompleteMinLength && query.length > 0) {
                 return;
             }          
             var url = query != '' ? _this.options.dataURL + '?searchString=' + query : _this.options.dataURL;           
@@ -166,8 +167,8 @@
             });
         } else {
             var filteredData = fetchedData.filter(function (object) {
-                var match = object.Text.match('^' + query);
-                return match ? true : false;
+                var regex = new RegExp('^' + query, 'i');
+                return regex.test(object.Text) ? true : false;
             })
             changeDropDownOptions(dropdown, filteredData, _this);
         }
