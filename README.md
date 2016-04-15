@@ -35,9 +35,11 @@ Notes:
 # Methods
 
 1. Destroy
+
   $('.select-list').data('selectList').destroy()
 
 2. Get final data
+
   $('.select-list').data('selectList').getChoices()
   It will return an object array with the same format as the data source in the INSTALL section
 
