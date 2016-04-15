@@ -42,7 +42,7 @@
     SelectList.prototype = {
         init: function () {
             var _this = this;
-            if (!_this.$elem.hasClass('select-list') || !_this.$elem.is('input')) {
+            if (!_this.$elem.is('input')) {
                 throw "Invalid input for select list";
             }
 
