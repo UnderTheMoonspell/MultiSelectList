@@ -30,7 +30,7 @@ Notes: $('.select-list') must be an input. It will throw an error otherwise: "In
   
 Notes: 
   1. Client side minimal length autocomplete is 1 and it is not configurable for now (personal choice).
-  2. A source must be supplied when initializing the plugin or it will throw and error: "Invalid data source"
+  2. A source must be supplied when initializing the plugin or it will throw an error: "Invalid data source"
 
 # Methods
 
@@ -44,3 +44,4 @@ Notes:
 
 # Live Demo
 
+https://codepen.io/XFrEaK/pen/PNeoBN
