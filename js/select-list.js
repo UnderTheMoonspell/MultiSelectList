@@ -2,10 +2,11 @@
     'use strict';
     var pluginName = 'select-list';
     var defaultOptions = {
-        width: "100%",
+        width: '100%',
         defaultClass: 'select-list-active',
         autocompleteFromServer: false,
-        autocompleteMinLength: 3
+        autocompleteMinLength: 3,
+        verticalDisplay: false
     };
 
     var fetchedData;
@@ -15,22 +16,22 @@
     var dropdownSpanClass = "select-list-dropdown-option";
 
     var resultDivClass = "select-list-result";
-    var resultDiv = $('<div class=' + resultDivClass + '></div>');
+    var resultDiv = $('<div class="' + resultDivClass + '"></div>');
     var resultDivBorderClass = "select-list-result-border";
     var resultLineClass = "select-list-result-line";
     var resultLineRemoveClass = "select-list-remove-img";
     var resultLineTextClass = "select-list-result-text";
-    var resultLine = '<div class=' + resultLineClass + '><span class=' + resultLineTextClass + ' data-result-line-value="{0}">{1}</span><span class=' + resultLineRemoveClass + '></span></div>';
+    var resultLine = '<div class="' + resultLineClass + '"><span class="' + resultLineTextClass + '" data-result-line-value="{0}">{1}</span><span class="' + resultLineRemoveClass + '"></span></div>';
     
-    var finalObject = [];
 
     function SelectList(elem, options) {
         this.$elem = $(elem);
+        this.$elem.data(pluginName + this.$elem.attr('id'), this);
         this.$elem.data(pluginName, this);
         this.name = pluginName;
         this.options = $.extend(defaultOptions, options);
         this.parent = this.$elem.parent();
-
+        this.finalObject = [];
         /** @private */
         this._fillDropDown = fillDropDown;
         /** @private */
@@ -41,6 +42,10 @@
     $.extend(SelectList.prototype, {
         init: function () {
             var _this = this;
+            if (_this.options.verticalDisplay) {
+                resultLine = '<div>' + resultLine + '</div>';
+            }
+
             if (!_this.$elem.hasClass('select-list') || !_this.$elem.is('input')) {
                 throw "Invalid input for select list";
             }
@@ -52,8 +57,8 @@
             $(_this.$elem)
                 .addClass(_this.options.defaultClass)
                 .css({ 'width': _this.options.width })
-                .after(resultDiv.clone())
-                .after(dropdowndiv.clone().css('top', $(_this.$elem).outerHeight() + $(_this.$elem).position().top))
+                .after(resultDiv.clone().css('width', _this.options.width))
+                .after(dropdowndiv.clone().css({'top' : $(_this.$elem).outerHeight() + $(_this.$elem).position().top , 'width': _this.options.width}))
                 .parent().css('position', 'relative');
             _this._fillDropDown();
         },
@@ -67,7 +72,7 @@
         },
 
         getChoices: function () {
-            return finalObject;
+            return this.finalObject;
         }
     });
 
@@ -85,17 +90,17 @@
         })
         .parent().find('.' + dropdownClass + ' span').off('.' + _this.name).on('mousedown.' + pluginName, function () {
             _this.parent.find('.' + resultDivClass).append(resultLine.replace('{1}', $(this).text()).replace('{0}', $(this).attr('data-dropdown-value')))._borderClass();
-            finalObject.push({ 'value': 0, 'text': $(this).text() });
+            _this.finalObject.push({ 'value': 0, 'text': $(this).text() });
         });
 
         _this.$elem.parent().off('.' + _this.name).on('click.' + pluginName, '.' + resultLineRemoveClass, function () {
             var clickedValue = $(this).attr('data-result-line-value');
-            var arrayIndex = $.each(finalObject, function (index, object) {
+            var arrayIndex = $.each(_this.finalObject, function (index, object) {
                 if (object.value == clickedValue) {
                     return index;
                 }
             });
-            finalObject.splice(arrayIndex, 1);
+            _this.finalObject.splice(arrayIndex, 1);
 
             $(this).parent().remove();
             _this.$elem.parent().find('.' + resultDivClass)._borderClass();
