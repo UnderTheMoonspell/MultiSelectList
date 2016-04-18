@@ -34,7 +34,7 @@ Notes: $('.select-list') must be an input. It will throw an error otherwise: "In
   
   $('.select-list').selectList({ dataURL: "http://example.com/api/GetExampleData"  , autocompleteFromServer: true, autocompleteMinLength:1});
 
-4. Vertical Display *New*
+4. Vertical Display \*New\*
   
   If the selections are to be added vertically the option "verticalDisplay" must be set to true:
   $('.select-list').selectList({ verticalDisplay: true, dataURL: "http://example.com/api/GetExampleData");
