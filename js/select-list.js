@@ -26,9 +26,8 @@
 
     function SelectList(elem, options) {
         this.$elem = $(elem);
-        this.name = pluginName;
-
         this.$elem.data(pluginName, this);
+        this.name = pluginName;
         this.options = $.extend(defaultOptions, options);
         this.parent = this.$elem.parent();
 
@@ -36,11 +35,10 @@
         this._fillDropDown = fillDropDown;
         /** @private */
         this._autocomplete = autocomplete;
-
         this.init();
     };
 
-    SelectList.prototype = {
+    $.extend(SelectList.prototype, {
         init: function () {
             var _this = this;
             if (!_this.$elem.hasClass('select-list') || !_this.$elem.is('input')) {
@@ -54,8 +52,8 @@
             $(_this.$elem)
                 .addClass(_this.options.defaultClass)
                 .css({ 'width': _this.options.width })
-                .after(resultDiv)
-                .after(dropdowndiv.css('top', $(_this.$elem).outerHeight()))
+                .after(resultDiv.clone())
+                .after(dropdowndiv.clone().css('top', $(_this.$elem).outerHeight() + $(_this.$elem).position().top))
                 .parent().css('position', 'relative');
             _this._fillDropDown();
         },
@@ -71,7 +69,7 @@
         getChoices: function () {
             return finalObject;
         }
-    };
+    });
 
 
     function bindEvents(_this) {
@@ -183,9 +181,10 @@
     }
 
     $.fn.selectList = function (options) {
-        return this.each(function () {
+        this.each(function () {
             new SelectList(this, options);
         });
+        return this;
     };
 
 })(jQuery, document, window);
