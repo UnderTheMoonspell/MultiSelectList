@@ -16,16 +16,20 @@ Notes: $('.select-list') must be an input. It will throw an error otherwise: "In
 # Options
 
 1. Input width
+
   $('.select-list').selectList({dataSource: jsonSource, width:'50%});
 
 2. Data Source URL
+
   $('.select-list').selectList({ dataURL: "http://example.com/api/GetExampleData" });
 
 3. Autocomplete from server
+
   By default, whatever source you choose, the autocomplete will be made offline based on the initial collection. If, however, you are supplying your data from a webservice and want your autocomplete to fetch from server you must pass the option "autocompleteFromServer":
   $('.select-list').selectList({ dataURL: "http://example.com/api/GetExampleData"  , autocompleteFromServer: true});
 
   Also the default minimal length for server side autocomplete is 3. You can also pass "autocompleteMinLength" to change to whatever you like:
+  
   $('.select-list').selectList({ dataURL: "http://example.com/api/GetExampleData"  , autocompleteFromServer: true, autocompleteMinLength:1});
   
 Notes: 
@@ -35,9 +39,11 @@ Notes:
 # Methods
 
 1. Destroy
+
   $('.select-list').data('selectList').destroy()
 
 2. Get final data
+
   $('.select-list').data('selectList').getChoices()
   It will return an object array with the same format as the data source in the INSTALL section
 
