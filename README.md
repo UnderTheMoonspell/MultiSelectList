@@ -37,7 +37,13 @@ Notes: $('.select-list') must be an input. It will throw an error otherwise: "In
 4. Vertical Display \*New\*
   
   If the selections are to be added vertically the option "verticalDisplay" must be set to true:
-  $('.select-list').selectList({ verticalDisplay: true, dataURL: "http://example.com/api/GetExampleData");
+  $('.select-list').selectList({ verticalDisplay: true, dataURL: "http://example.com/api/GetExampleData"});
+
+5. Previously entered data \*New\*
+
+   If you have previously saved data, and want to fill the control on initialization you must provide the values(ids) with the option "prevData":
+  
+  $('.select-list').selectList({ prevData: [1,2,3,4,5], dataURL: "http://example.com/api/GetExampleData"});
 
   
 Notes: 
@@ -55,6 +61,8 @@ Notes:
   $('.select-list').data('selectList').getChoices()
   It will return an object array with the same format as the data source in the INSTALL section
 
+  $('.select-list').data('selectList').getChoicesCSV()
+  It will return a string with the values separated by commas
 
 # Live Demo
 
