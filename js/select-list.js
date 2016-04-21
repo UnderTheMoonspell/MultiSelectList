@@ -6,13 +6,16 @@
         defaultClass: 'select-list-active',
         autocompleteFromServer: false,
         autocompleteMinLength: 3,
-        verticalDisplay: false
+        verticalDisplay: false,
+        prevData: '',
+        dataURL: '',
+        dataSource: ''
     };
 
     var fetchedData;
     var offlineMode = true;
     var dropdownClass = "select-list-dropdown";
-    var dropdowndiv = $('<div class="' + dropdownClass + ' display-none"' + ' ></div>');
+    var dropdowndiv = $('<div class="' + dropdownClass + '" style="display:none;"></div>');
     var dropdownSpanClass = "select-list-dropdown-option";
 
     var resultDivClass = "select-list-result";
@@ -22,15 +25,16 @@
     var resultLineRemoveClass = "select-list-remove-img";
     var resultLineTextClass = "select-list-result-text";
     var resultLine = '<div class="' + resultLineClass + '"><span class="' + resultLineTextClass + '" data-result-line-value="{0}">{1}</span><span class="' + resultLineRemoveClass + '"></span></div>';
-    
+
 
     function SelectList(elem, options) {
         this.$elem = $(elem);
-        this.$elem.data(pluginName + this.$elem.attr('id'), this);
         this.$elem.data(pluginName, this);
+
+
         this.name = pluginName;
-        this.options = $.extend(defaultOptions, options);
-        this.parent = this.$elem.parent();
+        this.options = $.extend({}, defaultOptions, options);
+        this.$parent = this.$elem.parent();
         this.finalObject = [];
         /** @private */
         this._fillDropDown = fillDropDown;
@@ -46,7 +50,7 @@
                 resultLine = '<div>' + resultLine + '</div>';
             }
 
-            if (!_this.$elem.hasClass('select-list') || !_this.$elem.is('input')) {
+            if (!_this.$elem.is('input')) {
                 throw "Invalid input for select list";
             }
 
@@ -56,11 +60,24 @@
 
             $(_this.$elem)
                 .addClass(_this.options.defaultClass)
-                .css({ 'width': _this.options.width })
-                .after(resultDiv.clone().css('width', _this.options.width))
-                .after(dropdowndiv.clone().css({'top' : $(_this.$elem).outerHeight() + $(_this.$elem).position().top , 'width': _this.options.width}))
-                .parent().css('position', 'relative');
+                .css({ 'width': _this.options.width }).parent().css('position', 'relative');
+
+            $(_this.$elem).after(resultDiv.clone().css('width', _this.options.width))
+                .after(dropdowndiv.clone().css({ 'top': $(_this.$elem).outerHeight() + $(_this.$elem).position().top, 'width': _this.options.width }));
+
             _this._fillDropDown();
+
+            $(document).mouseup(function (e) {
+                var container = _this.$elem
+                if (!container.is(e.target)
+                    && container.has(e.target).length === 0) {
+                    container = _this.$parent.find('.' + dropdownClass);
+                    if (!container.is(e.target)
+                        && container.has(e.target).length === 0) {
+                        _this.$parent.find('.' + dropdownClass).hide();
+                    }
+                }
+            });
         },
 
         destroy: function () {
@@ -68,11 +85,19 @@
             _this.$elem.removeData();
             _this.$elem.off('.' + this.name);
             _this.$elem.removeClass(_this.options.defaultClass).css({ 'width': '' });
-            _this.parent.css('position', '').find('div').remove();
+            _this.$parent.css('position', '').find('div').remove();
         },
 
         getChoices: function () {
             return this.finalObject;
+        },
+
+        getChoicesCSV: function () {
+            var returnString = "";
+            for (var item in this.finalObject) {
+                returnString = returnString + this.finalObject[item].Value + ','
+            }
+            return returnString.substr(0, returnString.length - 1);
         }
     });
 
@@ -82,43 +107,37 @@
             _this._autocomplete($(this).val());
         })
         .on('focus.' + pluginName, function () {
-            _this.parent.find('.' + dropdownClass).removeClass('display-none');
-        })
-        .on('blur.' + pluginName, function () {
-            _this.parent.find('.' + dropdownClass).addClass('display-none');
+            _this.$parent.find('.' + dropdownClass).css('display', 'block');
+        });
+        _this.$parent.find('.' + dropdownClass + ' span').off('.' + _this.name).on('mousedown.' + pluginName, function () {
+            _this.$parent.find('.' + resultDivClass).append(resultLine.replace('{1}', $(this).text()).replace('{0}', $(this).attr('data-dropdown-value')))._borderClass();
 
-        })
-        .parent().find('.' + dropdownClass + ' span').off('.' + _this.name).on('mousedown.' + pluginName, function () {
-            _this.parent.find('.' + resultDivClass).append(resultLine.replace('{1}', $(this).text()).replace('{0}', $(this).attr('data-dropdown-value')))._borderClass();
-            _this.finalObject.push({ 'value': 0, 'text': $(this).text() });
+            $(this).css('display', 'none');
+            _this.finalObject.push({ Value: $(this).attr('data-dropdown-value'), Text: $(this).text() });
+
         });
 
-        _this.$elem.parent().off('.' + _this.name).on('click.' + pluginName, '.' + resultLineRemoveClass, function () {
-            var clickedValue = $(this).attr('data-result-line-value');
-            var arrayIndex = $.each(_this.finalObject, function (index, object) {
-                if (object.value == clickedValue) {
-                    return index;
+        _this.$parent.off('.' + _this.name).on('click.' + pluginName, '.' + resultLineRemoveClass, function () {
+            var clickedValue = $(this).prev().attr('data-result-line-value');
+            _this.$parent.find('.' + dropdownClass).css('display', 'none').find('span[data-dropdown-value=' + clickedValue + ']').css('display', 'block');
+            var arrayIndex;
+            $.each(_this.finalObject, function (index, object) {
+                if (object.Value == clickedValue) {
+                    arrayIndex = index;
+                    return;
                 }
             });
             _this.finalObject.splice(arrayIndex, 1);
 
             $(this).parent().remove();
             _this.$elem.parent().find('.' + resultDivClass)._borderClass();
-        });
 
-        $.fn._borderClass = function () {
-            if (this.find('span').length > 0) {
-                this.addClass(resultDivBorderClass);
-            } else {
-                this.removeClass(resultDivBorderClass);
-            }
-            return this;
-        }
+        });
     };
 
     function fillDropDown() {
         var _this = this;
-        var dropdown = _this.parent.find('.' + dropdownClass);
+        var dropdown = _this.$parent.find('.' + dropdownClass);
         if (_this.options.dataURL) {
             var url = _this.options.dataURL;
             $.ajax({
@@ -126,10 +145,15 @@
                 url: url,
                 contentType: "application/json; charset=utf-8",
                 success: function (response) {
-                    if (response) {
-                        fetchedData = response;
-                        offlineMode = defaultOptions.autocompleteFromServer ? false : true;
-                        changeDropDownOptions(dropdown, fetchedData, _this);
+                    try{
+                        if (response) {
+                            fetchedData = JSON.parse(response);
+                            offlineMode = defaultOptions.autocompleteFromServer ? false : true;
+                            changeDropDownOptions(dropdown, fetchedData, _this);
+                        }
+                    }
+                    catch (error) {
+                        throw "Error parsing JSON";
                     }
                 },
                 error: function () {
@@ -147,12 +171,12 @@
 
     function autocomplete(query) {
         var _this = this;
-        var dropdown = _this.parent.find('.' + dropdownClass);
+        var dropdown = _this.$parent.find('.' + dropdownClass);
         if (!offlineMode) {
             if (query.length < defaultOptions.autocompleteMinLength && query.length > 0) {
                 return;
-            }          
-            var url = query != '' ? _this.options.dataURL + '?searchString=' + query : _this.options.dataURL;           
+            }
+            var url = query != '' ? _this.options.dataURL + '?searchString=' + query : _this.options.dataURL;
             $.ajax({
                 type: 'GET',
                 url: url,
@@ -183,7 +207,24 @@
             dropdown.append('<span class=' + dropdownSpanClass + ' data-dropdown-value=' + options[item].Value + ' >' + options[item].Text + '</span>');
         }
         bindEvents(plugin);
+        _fillPreviousData(plugin);
     }
+
+    function _fillPreviousData(pluginInstance) {
+        var _this = pluginInstance;
+        var prevData = _this.options.prevData;
+        if (prevData) {
+            for (var item in prevData) {
+                var value = prevData[item];
+                var $existingElem = _this.$parent.find('.' + dropdownClass + ' span[data-dropdown-value=' + value + ']');
+                if ($existingElem.length > 0) {
+                    _this.$parent.find('.' + resultDivClass).append(resultLine.replace('{1}', $existingElem.text()).replace('{0}', $existingElem.attr('data-dropdown-value')))._borderClass();
+                    _this.finalObject.push({ Value: $existingElem.attr('data-dropdown-value'), Text: $existingElem.text() });
+                    $existingElem.hide();
+                }
+            }
+        }
+    };
 
     $.fn.selectList = function (options) {
         this.each(function () {
@@ -192,4 +233,20 @@
         return this;
     };
 
+    $.fn._borderClass = function () {
+        if (this.find('span').length > 0) {
+            this.addClass(resultDivBorderClass);
+        } else {
+            this.removeClass(resultDivBorderClass);
+        }
+        return this;
+    }
+
 })(jQuery, document, window);
+
+
+
+
+
+
+
