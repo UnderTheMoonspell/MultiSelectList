@@ -11,8 +11,6 @@
         dataURL: '',
         dataSource: ''
     };
-
-    var fetchedData;
     var offlineMode = true;
     var dropdownClass = "select-list-dropdown";
     var dropdowndiv = $('<div class="' + dropdownClass + '" style="display:none;"></div>');
@@ -30,11 +28,10 @@
     function SelectList(elem, options) {
         this.$elem = $(elem);
         this.$elem.data(pluginName, this);
-
-
         this.name = pluginName;
         this.options = $.extend({}, defaultOptions, options);
         this.$parent = this.$elem.parent();
+		this.fetchedData = [];
         this.finalObject = [];
         /** @private */
         this._fillDropDown = fillDropDown;
@@ -102,7 +99,7 @@
     });
 
 
-    function bindEvents(_this) {
+    function _bindEvents(_this) {
         _this.$elem.off('.' + _this.name).on('keyup.' + pluginName, function () {
             _this._autocomplete($(this).val());
         })
@@ -147,9 +144,9 @@
                 success: function (response) {
                     try{
                         if (response) {
-                            fetchedData = JSON.parse(response);
+                            _this.fetchedData = JSON.parse(response);
                             offlineMode = defaultOptions.autocompleteFromServer ? false : true;
-                            changeDropDownOptions(dropdown, fetchedData, _this);
+                            _changeDropDownOptions(dropdown, _this.fetchedData, _this);
                         }
                     }
                     catch (error) {
@@ -161,9 +158,9 @@
                 }
             });
         } else if (_this.options.dataSource) {
-            fetchedData = this.options.dataSource;
+            _this.fetchedData = this.options.dataSource;
             offlineMode = true;
-            changeDropDownOptions(dropdown, fetchedData, _this);
+            _changeDropDownOptions(dropdown, _this.fetchedData, _this);
         } else {
             throw "Invalid data source";
         }
@@ -185,7 +182,7 @@
                 success: function (response) {
                     dropdown.empty()
                     if (response) {
-                        changeDropDownOptions(dropdown, response, _this);
+                        _changeDropDownOptions(dropdown, response, _this);
                     }
                 },
                 error: function () {
@@ -193,20 +190,22 @@
                 }
             });
         } else {
-            var filteredData = fetchedData.filter(function (object) {
+            var filteredData = _this.fetchedData.filter(function (object) {
                 var regex = new RegExp('^' + query, 'i');
-                return regex.test(object.Text) ? true : false;
+                var test = regex.test(object.Text) ? true : false;
+                var alreadyPicked = _this.$parent.find('.' + resultDivClass + ' span[data-result-line-value="' + object.Value + '"]').length > 0 ? true : false;
+                return test && !alreadyPicked;
             })
-            changeDropDownOptions(dropdown, filteredData, _this);
+            _changeDropDownOptions(dropdown, filteredData, _this);
         }
     }
 
-    function changeDropDownOptions(dropdown, options, plugin) {
+    function _changeDropDownOptions(dropdown, options, plugin) {
         dropdown.empty();
         for (var item in options) {
             dropdown.append('<span class=' + dropdownSpanClass + ' data-dropdown-value=' + options[item].Value + ' >' + options[item].Text + '</span>');
         }
-        bindEvents(plugin);
+        _bindEvents(plugin);
         _fillPreviousData(plugin);
     }
 
