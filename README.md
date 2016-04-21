@@ -17,7 +17,9 @@ Notes: $('.select-list') must be an input. It will throw an error otherwise: "In
 
 1. Input width
 
-  $('.select-list').selectList({dataSource: jsonSource, width:'50%});
+  $('.select-list').selectList({dataSource: jsonSource, width:'50%'});
+  
+  Default width is "100%".
 
 2. Data Source URL
 
@@ -31,6 +33,12 @@ Notes: $('.select-list') must be an input. It will throw an error otherwise: "In
   Also the default minimal length for server side autocomplete is 3. You can also pass "autocompleteMinLength" to change to whatever you like:
   
   $('.select-list').selectList({ dataURL: "http://example.com/api/GetExampleData"  , autocompleteFromServer: true, autocompleteMinLength:1});
+
+4. Vertical Display \*New\*
+  
+  If the selections are to be added vertically the option "verticalDisplay" must be set to true:
+  $('.select-list').selectList({ verticalDisplay: true, dataURL: "http://example.com/api/GetExampleData");
+
   
 Notes: 
   1. Client side minimal length autocomplete is 1 and it is not configurable for now (personal choice).
